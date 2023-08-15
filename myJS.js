@@ -25,11 +25,18 @@ let repositories = [];
 
 const getUser = (searchValue) => {
   fetch(`https://api.github.com/users/${searchValue}`)
-    .then((resp) => resp.json())
+    .then((resp) => {
+      if (resp.status !== 200) {
+        throw new Error();
+      }
+      return resp.json();
+    })
     .then((data) => {
       dev = data;
+      loading.classList.replace("hidden", "block");
       displayInfo(dev);
-    });
+    })
+    .catch((err) => console.log(err));
 };
 
 const getRepos = (searchValue) => {
@@ -46,7 +53,8 @@ const getRepos = (searchValue) => {
 };
 
 const displayInfo = (person) => {
-  result.classList.replace("flex", "hidden");
+  result.classList.replace("hidden", "flex");
+  loading.classList.replace("block", "hidden");
 
   user.textContent = person.name ? person.name : "No name to display";
   username.textContent = "@" + person.login;
@@ -76,6 +84,9 @@ btn.addEventListener("click", () => {
   if (!givenValue) {
     return;
   }
+
+  loading.classList.replace("hidden", "block");
+  result.classList.replace("flex", "hidden");
 
   getUser(givenValue);
   getRepos(givenValue);
